@@ -1,0 +1,118 @@
+<html>
+	<head>
+		<title></title>
+	</head>
+
+	<body>
+		<div id="root"></div>
+
+		 <script src="../js/react.development.js"></script>
+        <script src="../js/react-dom.development.js"></script>
+        <script src="../js/babel.js"></script>
+
+		<script type="text/babel">
+			const root = document.getElementById("root");
+			class Location extends React.Component {
+				constructor() {
+					super();
+					this.state = {
+						name: "",
+						location: {},
+						img: "",
+						temp: ""
+					};
+				}
+
+				getLocation = () => {
+					fetch(
+						`http://www.mapquestapi.com/geocoding/v1/address?key=gAO03GkHK3HJrUQYHR1GoeVT30Zyartc&location=${
+							this.state.name
+						}`
+					)
+						.then(responce => responce.json())
+						.then(data => {
+							this.setState(() => {
+								return {
+									location: data.results[0].locations[0].latLng
+
+									//img:data.results[0].locations[1].mapUrl
+								};
+							});
+							return fetch(
+								`https://api.darksky.net/forecast/beb280bf489e6b91a8e641d0c48133aa/${
+									Object.values(this.state.location)[0]
+								},${Object.values(this.state.location)[1]}`
+							);
+						})
+						.then(responce => responce.json())
+						.then(data => {
+							this.setState(() => ({ temp: data.currently.temperature }));
+						});
+				};
+
+				handleName = () => {
+					const name = event.target.value;
+					this.setState(prevState => ({ name }));
+				};
+				getCurrentLocation = () => {
+					navigator.geolocation.getCurrentPosition(currentLocation => {
+						this.setState(() => {
+							return {
+								location: {
+									lat: currentLocation.coords.latitude,
+									lng: currentLocation.coords.longitude
+								}
+							};
+						});
+
+						fetch(
+							`https://api.darksky.net/forecast/beb280bf489e6b91a8e641d0c48133aa/${
+								currentLocation.coords.latitude
+							},${currentLocation.coords.longitude}`
+						)
+							.then(response => response.json())
+							.then(data => {
+								this.setState(() => ({ temp: data.currently.temperature }));
+								return fetch("https://geoip-db.com/json/");
+							})
+							.then(responce => responce.json())
+							.then(data => {
+								this.setState(() => ({ name: data.city }));
+							});
+					});
+				};
+				render() {
+					return (
+						<div>
+							Name of City:{" "}
+							<input
+								type="text"
+								name="text"
+								onChange={this.handleName}
+								value={this.state.name}
+							/>
+							<br />
+							<button onClick={this.getLocation}>fetchLocation</button> OR
+							<button onClick={this.getCurrentLocation}>SeeMyLocation</button>
+							<p>Lattitude:{Object.values(this.state.location)[0]}</p>
+							<p>Longitude:{Object.values(this.state.location)[1]}</p>
+							{/*<img src={this.state.img}/>*/}
+							<p>
+								<iframe
+									width="500"
+									height="300"
+									src={`https://maps.google.com/maps?q=${
+										this.state.name
+									}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+								/>
+							</p>
+							<p>Temprature:{this.state.temp} F</p>
+						</div>
+					);
+				}
+			}
+
+			ReactDOM.render(<Location />, root);
+		</script>
+	</body>
+</html>

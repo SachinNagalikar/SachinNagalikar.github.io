@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+</head>
+
+<body>
+    <p></p>
+    <script>
+        fetch('https://api.darksky.net/forecast/9faac0d8b596ab1997a00d42550ed1ae/12.929869,77.5853801')
+            .then(response => response.json())
+            .then((data) => {
+                console.log(data);
+
+            })
+    </script>
+</body>
+
+</html>
